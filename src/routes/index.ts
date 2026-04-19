@@ -1,6 +1,7 @@
 import { Router } from "express";
+import categoriesRoutes from "../modules/categories/categories.route";
 
-export const router = Router();
+const router = Router();
 
 router.get("/health", (_req, res) => {
   res.json({
@@ -8,3 +9,7 @@ router.get("/health", (_req, res) => {
     message: "API OK",
   });
 });
+
+router.use("/categories", categoriesRoutes);
+
+export default router;
