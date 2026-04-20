@@ -2,10 +2,17 @@ import { prisma } from "../../lib/prisma";
 import { slugify } from "../../utils/slugify";
 import { ApiError } from "../../utils/ApiError";
 
-export async function createCategory(data: {
+type CreateCategoryInput = {
   name: string;
   description?: string;
-}) {
+};
+
+type UpdateCategoryInput = {
+  name?: string;
+  description?: string;
+};
+
+export async function createCategory(data: CreateCategoryInput) {
   const slug = slugify(data.name);
 
   const existingCategory = await prisma.category.findFirst({
@@ -45,4 +52,63 @@ export async function getCategoryById(id: string) {
   }
 
   return category;
+}
+
+export async function updateCategory(id: string, data: UpdateCategoryInput) {
+  const existingCategory = await prisma.category.findUnique({
+    where: { id },
+  });
+
+  if (!existingCategory) {
+    throw new ApiError(404, "Category not found");
+  }
+
+  let slug = existingCategory.slug;
+
+  if (data.name) {
+    slug = slugify(data.name);
+
+    const duplicateCategory = await prisma.category.findFirst({
+      where: {
+        AND: [
+          { id: { not: id } },
+          {
+            OR: [{ name: data.name }, { slug }],
+          },
+        ],
+      },
+    });
+
+    if (duplicateCategory) {
+      throw new ApiError(409, "Another category with this name already exists");
+    }
+  }
+
+  return prisma.category.update({
+    where: { id },
+    data: {
+      name: data.name ?? existingCategory.name,
+      description:
+        data.description !== undefined
+          ? data.description
+          : existingCategory.description,
+      slug,
+    },
+  });
+}
+
+export async function deleteCategory(id: string) {
+  const existingCategory = await prisma.category.findUnique({
+    where: { id },
+  });
+
+  if (!existingCategory) {
+    throw new ApiError(404, "Category not found");
+  }
+
+  await prisma.category.delete({
+    where: { id },
+  });
+
+  return { message: "Category deleted successfully" };
 }
