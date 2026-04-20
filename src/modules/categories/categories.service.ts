@@ -1,16 +1,10 @@
 import { prisma } from "../../lib/prisma";
 import { slugify } from "../../utils/slugify";
 import { ApiError } from "../../utils/ApiError";
-
-type CreateCategoryInput = {
-  name: string;
-  description?: string;
-};
-
-type UpdateCategoryInput = {
-  name?: string;
-  description?: string;
-};
+import type {
+  CreateCategoryInput,
+  UpdateCategoryInput,
+} from "../types/categories";
 
 export async function createCategory(data: CreateCategoryInput) {
   const slug = slugify(data.name);
