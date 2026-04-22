@@ -22,7 +22,7 @@ function generateToken(user: { id: string; email: string; role: UserRole }) {
   );
 }
 
-export default async function registerService(data: RegisterInput) {
+export async function registerService(data: RegisterInput) {
   const username = data.username.trim();
   const email = data.email.trim().toLowerCase();
   const password = data.password;
@@ -60,6 +60,47 @@ export default async function registerService(data: RegisterInput) {
       passwordHash,
     },
   });
+
+  const token = generateToken({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  });
+
+  return {
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    },
+    token,
+  };
+}
+
+export async function loginService(data: LoginInput) {
+  const email = data.email.trim().toLowerCase();
+  const password = data.password;
+
+  if (!email || !password) {
+    throw new Error("L'email et le mot de passe sont requis");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    throw new Error("Email ou mot de passe incorrect");
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+  if (!isPasswordValid) {
+    throw new Error("Email ou mot de passe incorrect");
+  }
 
   const token = generateToken({
     id: user.id,
