@@ -1,4 +1,5 @@
 import { Router } from "express";
+import authRouter from "../modules/auth/auth.route";
 import categoriesRoutes from "../modules/categories/categories.route";
 import challengesRoutes from "../modules/challenges/challenges.route";
 import testCasesRoutes from "../modules/testCases/testCases.route";
@@ -6,6 +7,7 @@ import submissionRoutes from "../modules/submissions/submissions.route";
 
 const router = Router();
 
+router.use("/auth", authRouter);
 router.use("/categories", categoriesRoutes);
 router.use("/challenges", challengesRoutes);
 router.use("/submissions", submissionRoutes);
