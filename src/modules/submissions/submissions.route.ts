@@ -5,10 +5,11 @@ import {
   getSubmissionsByChallengeController,
   getSubmissionsByUserController,
 } from "./submissions.controller";
+import { authMiddleware } from "../../middlewares/auth.middleware";
 
 const submissionRouter = Router();
 
-submissionRouter.post("/", createSubmissionController);
+submissionRouter.post("/", authMiddleware, createSubmissionController);
 submissionRouter.get(
   "/challenge/:challengeId",
   getSubmissionsByChallengeController,

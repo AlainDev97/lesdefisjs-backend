@@ -5,6 +5,7 @@ import {
   getSubmissionsByChallengeService,
   getSubmissionsByUserService,
 } from "./submissions.service";
+import { AuthenticatedRequest } from "../../middlewares/auth.middleware";
 
 type Params = {
   id: string;
@@ -13,20 +14,26 @@ type Params = {
 };
 
 export async function createSubmissionController(
-  req: Request<Params>,
+  req: AuthenticatedRequest,
   res: Response,
 ) {
   try {
-    const { userId, challengeId, sourceCode, language } = req.body;
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Non authentifié",
+      });
+    }
 
-    if (!userId || !challengeId || !sourceCode) {
+    const { challengeId, sourceCode, language } = req.body;
+
+    if (!challengeId || !sourceCode) {
       return res.status(400).json({
-        message: "userId, challengeId et sourceCode sont requis",
+        message: "challengeId et sourceCode sont requis",
       });
     }
 
     const result = await createSubmissionService({
-      userId,
+      userId: req.user.id,
       challengeId,
       sourceCode,
       language,
