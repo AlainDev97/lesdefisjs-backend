@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import {
   createSubmissionService,
   getSubmissionByIdService,
@@ -6,12 +6,6 @@ import {
   getSubmissionsByUserService,
 } from "./submissions.service";
 import { AuthenticatedRequest } from "../../middlewares/auth.middleware";
-
-type Params = {
-  id: string;
-  challengeId: string;
-  userId: string;
-};
 
 export async function createSubmissionController(
   req: AuthenticatedRequest,
@@ -60,12 +54,13 @@ export async function createSubmissionController(
 }
 
 export async function getSubmissionByIdController(
-  req: Request<Params>,
+  req: AuthenticatedRequest,
   res: Response,
 ) {
   try {
     const { id } = req.params;
-    const submission = await getSubmissionByIdService(id);
+    const submissionId = Array.isArray(id) ? id[0] : id;
+    const submission = await getSubmissionByIdService(submissionId);
 
     return res.status(200).json(submission);
   } catch (error) {
@@ -80,12 +75,16 @@ export async function getSubmissionByIdController(
 }
 
 export async function getSubmissionsByChallengeController(
-  req: Request<Params>,
+  req: AuthenticatedRequest,
   res: Response,
 ) {
   try {
     const { challengeId } = req.params;
-    const submissions = await getSubmissionsByChallengeService(challengeId);
+    const challengeIdParam = Array.isArray(challengeId)
+      ? challengeId[0]
+      : challengeId;
+    const submissions =
+      await getSubmissionsByChallengeService(challengeIdParam);
 
     return res.status(200).json(submissions);
   } catch {
@@ -97,12 +96,13 @@ export async function getSubmissionsByChallengeController(
 }
 
 export async function getSubmissionsByUserController(
-  req: Request<Params>,
+  req: AuthenticatedRequest,
   res: Response,
 ) {
   try {
     const { userId } = req.params;
-    const submissions = await getSubmissionsByUserService(userId);
+    const userIdParam = Array.isArray(userId) ? userId[0] : userId;
+    const submissions = await getSubmissionsByUserService(userIdParam);
 
     return res.status(200).json(submissions);
   } catch {
