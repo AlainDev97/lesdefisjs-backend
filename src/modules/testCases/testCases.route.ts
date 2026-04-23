@@ -7,15 +7,46 @@ import {
   getTestCasesByChallengeController,
   updateTestCaseController,
 } from "./testCases.controller";
+import { authMiddleware } from "../../middlewares/auth.middleware";
+import { adminMiddleware } from "../../middlewares/admin.middleware";
 
-const router = Router();
+const testCaseRouter = Router();
 
-router.get("/", getAllTestCasesController);
-router.get("/challenge/:challengeId", getTestCasesByChallengeController);
-router.get("/:id", getTestCaseByIdController);
-router.post("/", createTestCaseController);
-router.patch("/:id", updateTestCaseController);
-router.put("/:id", updateTestCaseController);
-router.delete("/:id", deleteTestCaseController);
+testCaseRouter.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  createTestCaseController,
+);
+testCaseRouter.get(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  getAllTestCasesController,
+);
+testCaseRouter.get(
+  "/challenge/:challengeId",
+  authMiddleware,
+  adminMiddleware,
+  getTestCasesByChallengeController,
+);
+testCaseRouter.get(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  getTestCaseByIdController,
+);
+testCaseRouter.put(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  updateTestCaseController,
+);
+testCaseRouter.delete(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  deleteTestCaseController,
+);
 
-export default router;
+export default testCaseRouter;
