@@ -6,13 +6,33 @@ import {
   getChallengeByIdController,
   updateChallengeController,
 } from "./challenges.controller";
+import { authMiddleware } from "../../middlewares/auth.middleware";
+import { adminMiddleware } from "../../middlewares/admin.middleware";
 
-const router = Router();
+const challengeRouter = Router();
 
-router.get("/", getAllChallengesController);
-router.get("/:id", getChallengeByIdController);
-router.post("/", createChallengeController);
-router.patch("/:id", updateChallengeController);
-router.delete("/:id", deleteChallengeController);
+// Public
+challengeRouter.get("/", getAllChallengesController);
+challengeRouter.get("/:id", getChallengeByIdController);
 
-export default router;
+// Admin only
+challengeRouter.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  createChallengeController,
+);
+challengeRouter.put(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  updateChallengeController,
+);
+challengeRouter.delete(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  deleteChallengeController,
+);
+
+export default challengeRouter;
