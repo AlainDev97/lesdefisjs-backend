@@ -6,13 +6,33 @@ import {
   getCategoryByIdController,
   updateCategoryController,
 } from "./categories.controller";
+import { authMiddleware } from "../../middlewares/auth.middleware";
+import { adminMiddleware } from "../../middlewares/admin.middleware";
 
-const router = Router();
+const categoryRouter = Router();
 
-router.get("/", getAllCategoriesController);
-router.get("/:id", getCategoryByIdController);
-router.post("/", createCategoryController);
-router.patch("/:id", updateCategoryController);
-router.delete("/:id", deleteCategoryController);
+// Public
+categoryRouter.get("/", getAllCategoriesController);
+categoryRouter.get("/:id", getCategoryByIdController);
 
-export default router;
+// Admin only
+categoryRouter.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  createCategoryController,
+);
+categoryRouter.put(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  updateCategoryController,
+);
+categoryRouter.delete(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  deleteCategoryController,
+);
+
+export default categoryRouter;
