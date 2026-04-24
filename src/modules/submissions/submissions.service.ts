@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { SubmissionStatus } from "../../generated/prisma/client";
+import { SubmissionStatus, UserRole } from "../../generated/prisma/client";
 import { runCodeAgainstTestCase } from "../../services/execution.service";
 
 type CreateSubmissionInput = {
@@ -111,7 +111,16 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
           },
         },
         challenge: true,
-        user: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 
@@ -163,7 +172,10 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
   }
 }
 
-export async function getSubmissionByIdService(id: string) {
+export async function getSubmissionByIdService(
+  id: string,
+  currentUser: { id: string; role: UserRole },
+) {
   const submission = await prisma.submission.findUnique({
     where: { id },
     include: {
@@ -176,7 +188,16 @@ export async function getSubmissionByIdService(id: string) {
         },
       },
       challenge: true,
-      user: true,
+      user: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     },
   });
 
@@ -184,14 +205,20 @@ export async function getSubmissionByIdService(id: string) {
     throw new Error("Submission introuvable");
   }
 
+  const isOwner = submission.userId === currentUser.id;
+  const isAdmin = currentUser.role === UserRole.ADMIN;
+
+  if (!isOwner && !isAdmin) {
+    throw new Error("Accès refusé");
+  }
+
   return submission;
 }
 
-export async function getSubmissionsByChallengeService(challengeId: string) {
+export async function getMySubmissionsService(userId: string) {
   return prisma.submission.findMany({
-    where: { challengeId },
+    where: { userId },
     include: {
-      user: true,
       challenge: true,
     },
     orderBy: {
@@ -200,7 +227,45 @@ export async function getSubmissionsByChallengeService(challengeId: string) {
   });
 }
 
-export async function getSubmissionsByUserService(userId: string) {
+export async function getSubmissionsByChallengeService(
+  challengeId: string,
+  currentUser: { id: string; role: UserRole },
+) {
+  const isAdmin = currentUser.role === UserRole.ADMIN;
+
+  return prisma.submission.findMany({
+    where: {
+      challengeId,
+      ...(isAdmin ? {} : { userId: currentUser.id }),
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+        },
+      },
+      challenge: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+export async function getSubmissionsByUserService(
+  userId: string,
+  currentUser: { id: string; role: UserRole },
+) {
+  const isOwner = userId === currentUser.id;
+  const isAdmin = currentUser.role === UserRole.ADMIN;
+
+  if (!isOwner && !isAdmin) {
+    throw new Error("Accès refusé");
+  }
+
   return prisma.submission.findMany({
     where: { userId },
     include: {

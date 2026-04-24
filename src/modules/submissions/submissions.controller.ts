@@ -1,6 +1,7 @@
 import { Response } from "express";
 import {
   createSubmissionService,
+  getMySubmissionsService,
   getSubmissionByIdService,
   getSubmissionsByChallengeService,
   getSubmissionsByUserService,
@@ -53,19 +54,53 @@ export async function createSubmissionController(
   }
 }
 
+export async function getMySubmissionsController(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Non authentifié",
+      });
+    }
+
+    const submissions = await getMySubmissionsService(req.user.id);
+
+    return res.status(200).json(submissions);
+  } catch {
+    return res.status(500).json({
+      message: "Erreur serveur lors de la récupération de vos submissions",
+    });
+  }
+}
+
 export async function getSubmissionByIdController(
   req: AuthenticatedRequest,
   res: Response,
 ) {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Non authentifié",
+      });
+    }
+
     const { id } = req.params;
     const submissionId = Array.isArray(id) ? id[0] : id;
-    const submission = await getSubmissionByIdService(submissionId);
+
+    const submission = await getSubmissionByIdService(submissionId, req.user);
 
     return res.status(200).json(submission);
   } catch (error) {
-    if (error instanceof Error && error.message === "Submission introuvable") {
-      return res.status(404).json({ message: error.message });
+    if (error instanceof Error) {
+      if (error.message === "Submission introuvable") {
+        return res.status(404).json({ message: error.message });
+      }
+
+      if (error.message === "Accès refusé") {
+        return res.status(403).json({ message: error.message });
+      }
     }
 
     return res.status(500).json({
@@ -79,12 +114,21 @@ export async function getSubmissionsByChallengeController(
   res: Response,
 ) {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Non authentifié",
+      });
+    }
+
     const { challengeId } = req.params;
     const challengeIdParam = Array.isArray(challengeId)
       ? challengeId[0]
       : challengeId;
-    const submissions =
-      await getSubmissionsByChallengeService(challengeIdParam);
+
+    const submissions = await getSubmissionsByChallengeService(
+      challengeIdParam,
+      req.user,
+    );
 
     return res.status(200).json(submissions);
   } catch {
@@ -100,12 +144,26 @@ export async function getSubmissionsByUserController(
   res: Response,
 ) {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Non authentifié",
+      });
+    }
+
     const { userId } = req.params;
     const userIdParam = Array.isArray(userId) ? userId[0] : userId;
-    const submissions = await getSubmissionsByUserService(userIdParam);
+
+    const submissions = await getSubmissionsByUserService(
+      userIdParam,
+      req.user,
+    );
 
     return res.status(200).json(submissions);
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === "Accès refusé") {
+      return res.status(403).json({ message: error.message });
+    }
+
     return res.status(500).json({
       message:
         "Erreur serveur lors de la récupération des submissions utilisateur",
