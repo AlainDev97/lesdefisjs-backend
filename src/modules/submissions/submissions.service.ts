@@ -1,6 +1,7 @@
 import { prisma } from "../../lib/prisma";
 import { SubmissionStatus, UserRole } from "../../generated/prisma/client";
 import { runCodeAgainstTestCase } from "../../services/execution.service";
+import { filterSubmissionResultsForUser } from "../../utils/function";
 
 type CreateSubmissionInput = {
   userId: string;
@@ -124,8 +125,13 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
       },
     });
 
+    const filteredSubmission = filterSubmissionResultsForUser(
+      updatedSubmission,
+      { id: data.userId, role: user.role },
+    );
+
     return {
-      submission: updatedSubmission,
+      submission: filteredSubmission,
       summary: {
         status: updatedSubmission.status,
         passedCount,
@@ -134,14 +140,7 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
         score,
         executionTimeMs: submissionExecutionTimeMs,
       },
-      results: executionResults.map((result) => ({
-        testCaseId: result.testCaseId,
-        passed: result.passed,
-        actualOutput: result.actualOutput,
-        expectedOutput: result.expectedOutput,
-        errorMessage: result.errorMessage,
-        executionTimeMs: result.executionTimeMs,
-      })),
+      results: filteredSubmission.results,
     };
   } catch (error) {
     const message =
@@ -212,7 +211,7 @@ export async function getSubmissionByIdService(
     throw new Error("Accès refusé");
   }
 
-  return submission;
+  return filterSubmissionResultsForUser(submission, currentUser);
 }
 
 export async function getMySubmissionsService(userId: string) {
