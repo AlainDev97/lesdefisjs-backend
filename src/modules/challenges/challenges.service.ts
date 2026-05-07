@@ -74,6 +74,22 @@ export async function getChallengeById(id: string) {
   return challenge;
 }
 
+export const getChallengeBySlug = async (slug: string) => {
+  const challenge = await prisma.challenge.findUnique({
+    where: { slug },
+    include: {
+      category: true,
+      testCases: true,
+    },
+  });
+
+  if (!challenge) {
+    throw new ApiError(404, "Challenge not found");
+  }
+
+  return challenge;
+};
+
 export async function updateChallenge(id: string, data: UpdateChallengeInput) {
   const existingChallenge = await prisma.challenge.findUnique({
     where: { id },

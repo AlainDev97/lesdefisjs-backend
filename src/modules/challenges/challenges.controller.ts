@@ -5,11 +5,16 @@ import {
   deleteChallenge,
   getAllChallenges,
   getChallengeById,
+  getChallengeBySlug,
   updateChallenge,
 } from "./challenges.service";
 
 type Params = {
   id: string;
+};
+
+type SlugParams = {
+  slug: string;
 };
 
 export const createChallengeController = asyncHandler(
@@ -36,6 +41,16 @@ export const getAllChallengesController = asyncHandler(
 export const getChallengeByIdController = asyncHandler(
   async (req: Request<Params>, res: Response) => {
     const challenge = await getChallengeById(req.params.id);
+
+    res.status(200).json({
+      data: challenge,
+    });
+  },
+);
+
+export const getChallengeBySlugController = asyncHandler(
+  async (req: Request<SlugParams>, res: Response) => {
+    const challenge = await getChallengeBySlug(req.params.slug);
 
     res.status(200).json({
       data: challenge,

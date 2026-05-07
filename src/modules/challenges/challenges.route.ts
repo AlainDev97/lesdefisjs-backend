@@ -4,6 +4,7 @@ import {
   deleteChallengeController,
   getAllChallengesController,
   getChallengeByIdController,
+  getChallengeBySlugController,
   updateChallengeController,
 } from "./challenges.controller";
 import { authMiddleware } from "../../middlewares/auth.middleware";
@@ -13,6 +14,7 @@ const challengeRouter = Router();
 
 // Public
 challengeRouter.get("/", getAllChallengesController);
+challengeRouter.get("/slug/:slug", getChallengeBySlugController);
 challengeRouter.get("/:id", getChallengeByIdController);
 
 // Admin only
