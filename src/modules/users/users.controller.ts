@@ -1,12 +1,16 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { UserRole } from "../../generated/prisma/client";
+import type { AuthenticatedRequest } from "../../middlewares/auth.middleware";
 import {
   deleteUserService,
   getAllUsersService,
   updateUserRoleService,
 } from "./users.service";
 
-export async function getAllUsersController(req: Request, res: Response) {
+export async function getAllUsersController(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
   try {
     const users = await getAllUsersService();
 
@@ -18,8 +22,17 @@ export async function getAllUsersController(req: Request, res: Response) {
   }
 }
 
-export async function updateUserRoleController(req: Request, res: Response) {
+export async function updateUserRoleController(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Non authentifié",
+      });
+    }
+
     const { id } = req.params;
     const { role } = req.body;
 
@@ -29,31 +42,57 @@ export async function updateUserRoleController(req: Request, res: Response) {
       });
     }
 
-    const user = await updateUserRoleService(String(id), role);
+    const user = await updateUserRoleService({
+      targetUserId: String(id),
+      currentUserId: req.user.id,
+      role,
+    });
 
     return res.status(200).json({
       message: "Rôle utilisateur mis à jour",
       data: user,
     });
-  } catch {
-    return res.status(500).json({
-      message: "Erreur serveur lors de la modification du rôle",
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Erreur serveur lors de la modification du rôle";
+
+    return res.status(403).json({
+      message,
     });
   }
 }
 
-export async function deleteUserController(req: Request, res: Response) {
+export async function deleteUserController(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Non authentifié",
+      });
+    }
+
     const { id } = req.params;
 
-    await deleteUserService(String(id));
+    await deleteUserService({
+      targetUserId: String(id),
+      currentUserId: req.user.id,
+    });
 
     return res.status(200).json({
       message: "Utilisateur supprimé",
     });
-  } catch {
-    return res.status(500).json({
-      message: "Erreur serveur lors de la suppression de l'utilisateur",
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Erreur serveur lors de la suppression de l'utilisateur";
+
+    return res.status(403).json({
+      message,
     });
   }
 }

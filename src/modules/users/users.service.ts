@@ -22,9 +22,23 @@ export async function getAllUsersService() {
   });
 }
 
-export async function updateUserRoleService(userId: string, role: UserRole) {
+type UpdateUserRoleServiceParams = {
+  targetUserId: string;
+  currentUserId: string;
+  role: UserRole;
+};
+
+export async function updateUserRoleService({
+  targetUserId,
+  currentUserId,
+  role,
+}: UpdateUserRoleServiceParams) {
+  if (targetUserId === currentUserId && role !== UserRole.ADMIN) {
+    throw new Error("Vous ne pouvez pas retirer votre propre rôle ADMIN");
+  }
+
   return prisma.user.update({
-    where: { id: userId },
+    where: { id: targetUserId },
     data: { role },
     select: {
       id: true,
@@ -33,12 +47,29 @@ export async function updateUserRoleService(userId: string, role: UserRole) {
       role: true,
       createdAt: true,
       updatedAt: true,
+      _count: {
+        select: {
+          submissions: true,
+        },
+      },
     },
   });
 }
 
-export async function deleteUserService(userId: string) {
+type DeleteUserServiceParams = {
+  targetUserId: string;
+  currentUserId: string;
+};
+
+export async function deleteUserService({
+  targetUserId,
+  currentUserId,
+}: DeleteUserServiceParams) {
+  if (targetUserId === currentUserId) {
+    throw new Error("Vous ne pouvez pas supprimer votre propre compte");
+  }
+
   return prisma.user.delete({
-    where: { id: userId },
+    where: { id: targetUserId },
   });
 }
