@@ -34,6 +34,14 @@ enum SubmissionStatus {
   FAILED
 }
 
+enum BadgeCode {
+  FIRST_SUCCESS
+  PERFECT_SCORE
+  REGULAR
+  CONFIRMED
+  TOP_PLAYER
+}
+
 model User {
   id           String   @id @default(uuid())
   username     String   @unique
@@ -44,6 +52,7 @@ model User {
   updatedAt    DateTime @updatedAt
 
   submissions Submission[]
+  badges      UserBadge[]
 }
 
 model Category {
@@ -148,4 +157,27 @@ model SubmissionResult {
   @@unique([submissionId, testCaseId])
   @@index([submissionId])
   @@index([testCaseId])
+}
+
+model Badge {
+  id          String    @id @default(uuid())
+  code        BadgeCode @unique
+  name        String
+  description String
+  icon        String?
+  createdAt   DateTime  @default(now())
+
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(uuid())
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
 }
