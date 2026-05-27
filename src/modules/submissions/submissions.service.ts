@@ -2,6 +2,7 @@ import { prisma } from "../../lib/prisma";
 import { SubmissionStatus, UserRole } from "../../generated/prisma/client";
 import { runCodeAgainstTestCase } from "../../services/execution.service";
 import { filterSubmissionResultsForUser } from "../../utils/function";
+import { checkAndAwardBadges } from "../badges/badges.service";
 
 type CreateSubmissionInput = {
   userId: string;
@@ -124,6 +125,8 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
         },
       },
     });
+
+    await checkAndAwardBadges(data.userId);
 
     const filteredSubmission = filterSubmissionResultsForUser(
       updatedSubmission,
