@@ -1,6 +1,20 @@
 import { BadgeCode } from "../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
+export async function getUserBadgesService(userId: string) {
+  return prisma.userBadge.findMany({
+    where: {
+      userId,
+    },
+    include: {
+      badge: true,
+    },
+    orderBy: {
+      earnedAt: "desc",
+    },
+  });
+}
+
 export async function awardBadgeToUser(userId: string, badgeCode: BadgeCode) {
   const badge = await prisma.badge.findUnique({
     where: {
