@@ -126,7 +126,7 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
       },
     });
 
-    await checkAndAwardBadges(data.userId);
+    const earnedBadges = await checkAndAwardBadges(data.userId);
 
     const filteredSubmission = filterSubmissionResultsForUser(
       updatedSubmission,
@@ -144,6 +144,7 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
         executionTimeMs: submissionExecutionTimeMs,
       },
       results: filteredSubmission.results,
+      earnedBadges,
     };
   } catch (error) {
     const message =
@@ -170,6 +171,7 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
         executionTimeMs: 0,
       },
       results: [],
+      earnedBadges: [],
     };
   }
 }

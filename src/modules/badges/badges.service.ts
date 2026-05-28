@@ -148,4 +148,6 @@ export async function checkAndAwardBadges(userId: string) {
       earnedBadges.push(badge);
     }
   }
+
+  return earnedBadges;
 }
