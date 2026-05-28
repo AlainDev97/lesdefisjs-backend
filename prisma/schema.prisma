@@ -48,6 +48,7 @@ model User {
   email        String   @unique
   passwordHash String
   role         UserRole @default(USER)
+  challengeProgress UserChallengeProgress[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -76,6 +77,7 @@ model Challenge {
   solutionCode String?
   difficulty   Difficulty
   status       ChallengeStatus @default(DRAFT)
+  userProgress UserChallengeProgress[]
   functionName String
   parameters   Json?
   returnType   String?
@@ -180,4 +182,22 @@ model UserBadge {
   badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
+}
+
+model UserChallengeProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  challengeId String
+  solvedAt    DateTime?
+  bestScore   Int      @default(0)
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeId])
+  @@index([userId])
+  @@index([challengeId])
 }
