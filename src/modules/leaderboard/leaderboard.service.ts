@@ -59,15 +59,20 @@ export async function getLeaderboardService() {
     };
   });
 
-  return leaderboard.sort((a, b) => {
-    if (b.solvedChallenges !== a.solvedChallenges) {
-      return b.solvedChallenges - a.solvedChallenges;
-    }
+  return leaderboard
+    .sort((a, b) => {
+      if (b.solvedChallenges !== a.solvedChallenges) {
+        return b.solvedChallenges - a.solvedChallenges;
+      }
 
-    if (b.averageScore !== a.averageScore) {
-      return b.averageScore - a.averageScore;
-    }
+      if (b.averageScore !== a.averageScore) {
+        return b.averageScore - a.averageScore;
+      }
 
-    return b.totalSubmissions - a.totalSubmissions;
-  });
+      return b.totalSubmissions - a.totalSubmissions;
+    })
+    .map((user, index) => ({
+      rank: index + 1,
+      ...user,
+    }));
 }

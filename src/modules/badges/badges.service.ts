@@ -1,4 +1,5 @@
 import { BadgeCode } from "../../generated/prisma/client";
+import { getLeaderboardService } from "../leaderboard/leaderboard.service";
 import { prisma } from "../../lib/prisma";
 
 export async function getUserBadgesService(userId: string) {
@@ -107,5 +108,18 @@ export async function checkAndAwardBadges(userId: string) {
 
   if (successfulChallenges.length >= 5) {
     await awardBadgeToUser(userId, BadgeCode.CONFIRMED);
+  }
+
+  /*
+  TOP PLAYER
+*/
+  const leaderboard = await getLeaderboardService();
+
+  const currentUserRank = leaderboard.find(
+    (user) => user.userId === userId,
+  )?.rank;
+
+  if (currentUserRank && currentUserRank <= 3) {
+    await awardBadgeToUser(userId, BadgeCode.TOP_PLAYER);
   }
 }
