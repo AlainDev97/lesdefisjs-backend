@@ -24,7 +24,7 @@ export async function awardBadgeToUser(userId: string, badgeCode: BadgeCode) {
   });
 
   if (!badge) {
-    return;
+    return null;
   }
 
   const existingUserBadge = await prisma.userBadge.findUnique({
@@ -37,20 +37,27 @@ export async function awardBadgeToUser(userId: string, badgeCode: BadgeCode) {
   });
 
   if (existingUserBadge) {
-    return;
+    return null;
   }
 
-  await prisma.userBadge.create({
+  const userBadge = await prisma.userBadge.create({
     data: {
       userId,
       badgeId: badge.id,
     },
+    include: {
+      badge: true,
+    },
   });
 
   console.log(`🏆 Badge attribué : ${badge.name} -> ${userId}`);
+
+  return userBadge.badge;
 }
 
 export async function checkAndAwardBadges(userId: string) {
+  const earnedBadges = [];
+
   /*
     PREMIER SUCCÈS
   */
@@ -65,7 +72,11 @@ export async function checkAndAwardBadges(userId: string) {
   });
 
   if (completedSubmissions >= 1) {
-    await awardBadgeToUser(userId, BadgeCode.FIRST_SUCCESS);
+    const badge = await awardBadgeToUser(userId, BadgeCode.FIRST_SUCCESS);
+
+    if (badge) {
+      earnedBadges.push(badge);
+    }
   }
 
   /*
@@ -79,7 +90,11 @@ export async function checkAndAwardBadges(userId: string) {
   });
 
   if (perfectSubmission) {
-    await awardBadgeToUser(userId, BadgeCode.PERFECT_SCORE);
+    const badge = await awardBadgeToUser(userId, BadgeCode.PERFECT_SCORE);
+
+    if (badge) {
+      earnedBadges.push(badge);
+    }
   }
 
   /*
@@ -92,7 +107,10 @@ export async function checkAndAwardBadges(userId: string) {
   });
 
   if (totalSubmissions >= 10) {
-    await awardBadgeToUser(userId, BadgeCode.REGULAR);
+    const badge = await awardBadgeToUser(userId, BadgeCode.REGULAR);
+    if (badge) {
+      earnedBadges.push(badge);
+    }
   }
 
   /*
@@ -107,7 +125,11 @@ export async function checkAndAwardBadges(userId: string) {
   });
 
   if (successfulChallenges.length >= 5) {
-    await awardBadgeToUser(userId, BadgeCode.CONFIRMED);
+    const badge = await awardBadgeToUser(userId, BadgeCode.CONFIRMED);
+
+    if (badge) {
+      earnedBadges.push(badge);
+    }
   }
 
   /*
@@ -120,6 +142,10 @@ export async function checkAndAwardBadges(userId: string) {
   )?.rank;
 
   if (currentUserRank && currentUserRank <= 3) {
-    await awardBadgeToUser(userId, BadgeCode.TOP_PLAYER);
+    const badge = await awardBadgeToUser(userId, BadgeCode.TOP_PLAYER);
+
+    if (badge) {
+      earnedBadges.push(badge);
+    }
   }
 }
