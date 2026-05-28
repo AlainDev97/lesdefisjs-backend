@@ -3,6 +3,7 @@ import { SubmissionStatus, UserRole } from "../../generated/prisma/client";
 import { runCodeAgainstTestCase } from "../../services/execution.service";
 import { filterSubmissionResultsForUser } from "../../utils/function";
 import { checkAndAwardBadges } from "../badges/badges.service";
+import { updateUserChallengeProgress } from "../progression/userChallengeProgress.service";
 
 type CreateSubmissionInput = {
   userId: string;
@@ -126,6 +127,12 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
       },
     });
 
+    const challengeProgress = await updateUserChallengeProgress({
+      userId: data.userId,
+      challengeId: data.challengeId,
+      score,
+    });
+
     const earnedBadges = await checkAndAwardBadges(data.userId);
 
     const filteredSubmission = filterSubmissionResultsForUser(
@@ -145,6 +152,7 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
       },
       results: filteredSubmission.results,
       earnedBadges,
+      challengeProgress,
     };
   } catch (error) {
     const message =
@@ -172,6 +180,7 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
       },
       results: [],
       earnedBadges: [],
+      challengeProgress: null,
     };
   }
 }
