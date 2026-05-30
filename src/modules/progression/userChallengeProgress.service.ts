@@ -1,5 +1,26 @@
 import { prisma } from "../../lib/prisma";
 
+export async function getUserChallengeProgressService(params: {
+  userId: string;
+  challengeId: string;
+}) {
+  const progress = await prisma.userChallengeProgress.findUnique({
+    where: {
+      userId_challengeId: {
+        userId: params.userId,
+        challengeId: params.challengeId,
+      },
+    },
+  });
+
+  return {
+    isSolved: Boolean(progress?.solvedAt),
+    solvedAt: progress?.solvedAt ?? null,
+    bestScore: progress?.bestScore ?? 0,
+    attempts: progress?.attempts ?? 0,
+  };
+}
+
 export async function updateUserChallengeProgress(params: {
   userId: string;
   challengeId: string;
