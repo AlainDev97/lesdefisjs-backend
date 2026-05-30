@@ -5,55 +5,45 @@ export async function getLeaderboardService() {
     select: {
       id: true,
       username: true,
-      submissions: {
+      challengeProgress: {
         select: {
-          id: true,
-          challengeId: true,
-          score: true,
-          status: true,
-          createdAt: true,
+          solvedAt: true,
+          bestScore: true,
+          attempts: true,
         },
       },
     },
   });
 
   const leaderboard = users.map((user) => {
-    const completedSubmissions = user.submissions.filter(
-      (submission) => submission.status === "COMPLETED",
+    const solvedChallenges = user.challengeProgress.filter(
+      (progress) => progress.solvedAt !== null,
+    ).length;
+
+    const totalAttempts = user.challengeProgress.reduce(
+      (total, progress) => total + progress.attempts,
+      0,
     );
 
-    const successfulSubmissions = completedSubmissions.filter(
-      (submission) => submission.score === 100,
+    const bestScores = user.challengeProgress.map(
+      (progress) => progress.bestScore,
     );
-
-    const solvedChallengeIds = new Set(
-      successfulSubmissions.map((submission) => submission.challengeId),
-    );
-
-    const totalSubmissions = user.submissions.length;
 
     const averageScore =
-      completedSubmissions.length > 0
+      bestScores.length > 0
         ? Math.round(
-            completedSubmissions.reduce(
-              (total, submission) => total + submission.score,
-              0,
-            ) / completedSubmissions.length,
+            bestScores.reduce((total, score) => total + score, 0) /
+              bestScores.length,
           )
         : 0;
 
-    const bestScore =
-      completedSubmissions.length > 0
-        ? Math.max(
-            ...completedSubmissions.map((submission) => submission.score),
-          )
-        : 0;
+    const bestScore = bestScores.length > 0 ? Math.max(...bestScores) : 0;
 
     return {
       userId: user.id,
       username: user.username,
-      solvedChallenges: solvedChallengeIds.size,
-      totalSubmissions,
+      solvedChallenges,
+      totalSubmissions: totalAttempts,
       averageScore,
       bestScore,
     };
