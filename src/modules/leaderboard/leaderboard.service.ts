@@ -59,7 +59,7 @@ export async function getLeaderboardService() {
         return b.averageScore - a.averageScore;
       }
 
-      return b.totalSubmissions - a.totalSubmissions;
+      return a.totalSubmissions - b.totalSubmissions;
     })
     .map((user, index) => ({
       rank: index + 1,
