@@ -38,6 +38,25 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
     throw new Error("Aucun test case trouvé pour ce challenge");
   }
 
+  const lastSubmission = await prisma.submission.findFirst({
+    where: {
+      userId: data.userId,
+      challengeId: data.challengeId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  if (
+    lastSubmission &&
+    Date.now() - lastSubmission.createdAt.getTime() < 5000
+  ) {
+    throw new Error(
+      "Merci de ne pas spammer les soumissions. Veuillez attendre quelques secondes avant de réessayer.",
+    );
+  }
+
   const submission = await prisma.submission.create({
     data: {
       userId: data.userId,
