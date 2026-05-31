@@ -45,14 +45,18 @@ export const getAllChallengesWithProgressController = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user!.id;
 
-    const challenges = await getAllChallengesWithProgress(userId);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 12;
 
-    res.status(200).json({
-      data: challenges,
+    const result = await getAllChallengesWithProgress({
+      userId,
+      page,
+      limit,
     });
+
+    res.status(200).json(result);
   },
 );
-
 export const getChallengeByIdController = asyncHandler(
   async (req: Request<Params>, res: Response) => {
     const challenge = await getChallengeById(req.params.id);

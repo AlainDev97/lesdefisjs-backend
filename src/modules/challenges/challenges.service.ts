@@ -3,6 +3,17 @@ import { ApiError } from "../../utils/ApiError";
 import { slugify } from "../../utils/slugify";
 import type { CreateChallengeInput } from "../types/challenges";
 
+type GetAllChallengesParams = {
+  page?: number;
+  limit?: number;
+};
+
+type GetAllChallengesWithProgressParams = {
+  userId: string;
+  page?: number;
+  limit?: number;
+};
+
 type UpdateChallengeInput = Partial<CreateChallengeInput>;
 
 export async function createChallenge(data: CreateChallengeInput) {
@@ -47,41 +58,74 @@ export async function createChallenge(data: CreateChallengeInput) {
 }
 
 // Service pour récupérer tous les challenges sans le progrès de l'utilisateur
-export async function getAllChallenges() {
-  return prisma.challenge.findMany({
-    include: {
-      category: true,
-      testCases: true,
+export async function getAllChallenges({
+  page = 1,
+  limit = 12,
+}: GetAllChallengesParams = {}) {
+  const skip = (page - 1) * limit;
+
+  const [challenges, total] = await Promise.all([
+    prisma.challenge.findMany({
+      skip,
+      take: limit,
+      include: {
+        category: true,
+        testCases: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+
+    prisma.challenge.count(),
+  ]);
+
+  return {
+    data: challenges,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
     },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  };
 }
 
 // Service pour récupérer tous les challenges avec le progrès de l'utilisateur connecté
-export async function getAllChallengesWithProgress(userId: string) {
-  const challenges = await prisma.challenge.findMany({
-    include: {
-      category: true,
-      testCases: true,
-      userProgress: {
-        where: {
-          userId,
-        },
-        select: {
-          solvedAt: true,
-          bestScore: true,
-          attempts: true,
+export async function getAllChallengesWithProgress({
+  userId,
+  page = 1,
+  limit = 12,
+}: GetAllChallengesWithProgressParams) {
+  const skip = (page - 1) * limit;
+
+  const [challenges, total] = await Promise.all([
+    prisma.challenge.findMany({
+      skip,
+      take: limit,
+      include: {
+        category: true,
+        testCases: true,
+        userProgress: {
+          where: {
+            userId,
+          },
+          select: {
+            solvedAt: true,
+            bestScore: true,
+            attempts: true,
+          },
         },
       },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
 
-  return challenges.map((challenge) => {
+    prisma.challenge.count(),
+  ]);
+
+  const formattedChallenges = challenges.map((challenge) => {
     const progress = challenge.userProgress[0];
 
     return {
@@ -92,6 +136,16 @@ export async function getAllChallengesWithProgress(userId: string) {
       userProgress: undefined,
     };
   });
+
+  return {
+    data: formattedChallenges,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 }
 
 export async function getChallengeById(id: string) {
