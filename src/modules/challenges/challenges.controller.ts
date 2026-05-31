@@ -4,6 +4,7 @@ import {
   createChallenge,
   deleteChallenge,
   getAllChallenges,
+  getAllChallengesWithProgress,
   getChallengeById,
   getChallengeBySlug,
   updateChallenge,
@@ -28,9 +29,23 @@ export const createChallengeController = asyncHandler(
   },
 );
 
+// Controller pour récupérer tous les challenges sans le progrès de l'utilisateur
 export const getAllChallengesController = asyncHandler(
   async (_req: Request<Params>, res: Response) => {
     const challenges = await getAllChallenges();
+
+    res.status(200).json({
+      data: challenges,
+    });
+  },
+);
+
+// Controller pour récupérer tous les challenges avec le progrès de l'utilisateur
+export const getAllChallengesWithProgressController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+
+    const challenges = await getAllChallengesWithProgress(userId);
 
     res.status(200).json({
       data: challenges,

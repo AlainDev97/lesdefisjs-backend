@@ -46,6 +46,7 @@ export async function createChallenge(data: CreateChallengeInput) {
   });
 }
 
+// Service pour récupérer tous les challenges sans le progrès de l'utilisateur
 export async function getAllChallenges() {
   return prisma.challenge.findMany({
     include: {
@@ -55,6 +56,41 @@ export async function getAllChallenges() {
     orderBy: {
       createdAt: "desc",
     },
+  });
+}
+
+// Service pour récupérer tous les challenges avec le progrès de l'utilisateur connecté
+export async function getAllChallengesWithProgress(userId: string) {
+  const challenges = await prisma.challenge.findMany({
+    include: {
+      category: true,
+      testCases: true,
+      userProgress: {
+        where: {
+          userId,
+        },
+        select: {
+          solvedAt: true,
+          bestScore: true,
+          attempts: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return challenges.map((challenge) => {
+    const progress = challenge.userProgress[0];
+
+    return {
+      ...challenge,
+      isSolved: Boolean(progress?.solvedAt),
+      bestScore: progress?.bestScore ?? 0,
+      attempts: progress?.attempts ?? 0,
+      userProgress: undefined,
+    };
   });
 }
 

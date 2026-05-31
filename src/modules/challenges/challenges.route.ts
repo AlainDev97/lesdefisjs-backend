@@ -3,6 +3,7 @@ import {
   createChallengeController,
   deleteChallengeController,
   getAllChallengesController,
+  getAllChallengesWithProgressController,
   getChallengeByIdController,
   getChallengeBySlugController,
   updateChallengeController,
@@ -13,6 +14,7 @@ import { adminMiddleware } from "../../middlewares/admin.middleware";
 const challengeRouter = Router();
 
 // Public
+challengeRouter.get("/me", authMiddleware, getAllChallengesWithProgressController);
 challengeRouter.get("/", getAllChallengesController);
 challengeRouter.get("/slug/:slug", getChallengeBySlugController);
 challengeRouter.get("/:id", getChallengeByIdController);
