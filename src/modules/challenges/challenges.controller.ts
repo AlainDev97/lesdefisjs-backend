@@ -31,12 +31,16 @@ export const createChallengeController = asyncHandler(
 
 // Controller pour récupérer tous les challenges sans le progrès de l'utilisateur
 export const getAllChallengesController = asyncHandler(
-  async (_req: Request<Params>, res: Response) => {
-    const challenges = await getAllChallenges();
+  async (req: Request, res: Response) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 12;
 
-    res.status(200).json({
-      data: challenges,
+    const result = await getAllChallenges({
+      page,
+      limit,
     });
+
+    res.status(200).json(result);
   },
 );
 
@@ -57,6 +61,7 @@ export const getAllChallengesWithProgressController = asyncHandler(
     res.status(200).json(result);
   },
 );
+
 export const getChallengeByIdController = asyncHandler(
   async (req: Request<Params>, res: Response) => {
     const challenge = await getChallengeById(req.params.id);
