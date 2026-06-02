@@ -14,6 +14,14 @@ type GetAllChallengesWithProgressParams = {
   limit?: number;
 };
 
+type ChallengeFilters = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  difficulty?: "ALL" | "EASY" | "MEDIUM" | "HARD";
+  category?: string;
+};
+
 type UpdateChallengeInput = Partial<CreateChallengeInput>;
 
 export async function createChallenge(data: CreateChallengeInput) {
@@ -61,11 +69,54 @@ export async function createChallenge(data: CreateChallengeInput) {
 export async function getAllChallenges({
   page = 1,
   limit = 12,
-}: GetAllChallengesParams = {}) {
+  search = "",
+  difficulty = "ALL",
+  category = "ALL",
+}: ChallengeFilters = {}) {
   const skip = (page - 1) * limit;
+
+  const where = {
+    status: "PUBLISHED" as const,
+
+    ...(difficulty !== "ALL" && {
+      difficulty,
+    }),
+
+    ...(category !== "ALL" && {
+      category: {
+        name: category,
+      },
+    }),
+
+    ...(search && {
+      OR: [
+        {
+          title: {
+            contains: search,
+            mode: "insensitive" as const,
+          },
+        },
+        {
+          description: {
+            contains: search,
+            mode: "insensitive" as const,
+          },
+        },
+        {
+          category: {
+            name: {
+              contains: search,
+              mode: "insensitive" as const,
+            },
+          },
+        },
+      ],
+    }),
+  };
 
   const [challenges, total] = await Promise.all([
     prisma.challenge.findMany({
+      where,
       skip,
       take: limit,
       include: {
@@ -77,7 +128,9 @@ export async function getAllChallenges({
       },
     }),
 
-    prisma.challenge.count(),
+    prisma.challenge.count({
+      where,
+    }),
   ]);
 
   return {
@@ -92,15 +145,62 @@ export async function getAllChallenges({
 }
 
 // Service pour récupérer tous les challenges avec le progrès de l'utilisateur connecté
+type ChallengeWithProgressFilters = ChallengeFilters & {
+  userId: string;
+};
+
 export async function getAllChallengesWithProgress({
   userId,
   page = 1,
   limit = 12,
-}: GetAllChallengesWithProgressParams) {
+  search = "",
+  difficulty = "ALL",
+  category = "ALL",
+}: ChallengeWithProgressFilters) {
   const skip = (page - 1) * limit;
+
+  const where = {
+    status: "PUBLISHED" as const,
+
+    ...(difficulty !== "ALL" && {
+      difficulty,
+    }),
+
+    ...(category !== "ALL" && {
+      category: {
+        name: category,
+      },
+    }),
+
+    ...(search && {
+      OR: [
+        {
+          title: {
+            contains: search,
+            mode: "insensitive" as const,
+          },
+        },
+        {
+          description: {
+            contains: search,
+            mode: "insensitive" as const,
+          },
+        },
+        {
+          category: {
+            name: {
+              contains: search,
+              mode: "insensitive" as const,
+            },
+          },
+        },
+      ],
+    }),
+  };
 
   const [challenges, total] = await Promise.all([
     prisma.challenge.findMany({
+      where,
       skip,
       take: limit,
       include: {
@@ -122,7 +222,9 @@ export async function getAllChallengesWithProgress({
       },
     }),
 
-    prisma.challenge.count(),
+    prisma.challenge.count({
+      where,
+    }),
   ]);
 
   const formattedChallenges = challenges.map((challenge) => {

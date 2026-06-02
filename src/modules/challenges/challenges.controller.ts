@@ -34,10 +34,20 @@ export const getAllChallengesController = asyncHandler(
   async (req: Request, res: Response) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 12;
+    const search = String(req.query.search ?? "");
+    const difficulty = String(req.query.difficulty ?? "ALL") as
+      | "ALL"
+      | "EASY"
+      | "MEDIUM"
+      | "HARD";
+    const category = String(req.query.category ?? "ALL");
 
     const result = await getAllChallenges({
       page,
       limit,
+      search,
+      difficulty,
+      category,
     });
 
     res.status(200).json(result);
@@ -51,11 +61,21 @@ export const getAllChallengesWithProgressController = asyncHandler(
 
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 12;
+    const search = String(req.query.search ?? "");
+    const difficulty = String(req.query.difficulty ?? "ALL") as
+      | "ALL"
+      | "EASY"
+      | "MEDIUM"
+      | "HARD";
+    const category = String(req.query.category ?? "ALL");
 
     const result = await getAllChallengesWithProgress({
       userId,
       page,
       limit,
+      search,
+      difficulty,
+      category,
     });
 
     res.status(200).json(result);
