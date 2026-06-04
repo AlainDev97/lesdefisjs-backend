@@ -250,6 +250,42 @@ export async function getAllChallengesWithProgress({
   };
 }
 
+export async function getAdminChallenges({
+  page = 1,
+  limit = 12,
+}: {
+  page?: number;
+  limit?: number;
+}) {
+  const skip = (page - 1) * limit;
+
+  const [challenges, total] = await Promise.all([
+    prisma.challenge.findMany({
+      skip,
+      take: limit,
+      include: {
+        category: true,
+        testCases: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+
+    prisma.challenge.count(),
+  ]);
+
+  return {
+    data: challenges,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
+
 export async function getChallengeById(id: string) {
   const challenge = await prisma.challenge.findUnique({
     where: { id },

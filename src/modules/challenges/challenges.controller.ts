@@ -3,6 +3,7 @@ import { asyncHandler } from "../../utils/asyncHandler";
 import {
   createChallenge,
   deleteChallenge,
+  getAdminChallenges,
   getAllChallenges,
   getAllChallengesWithProgress,
   getChallengeById,
@@ -76,6 +77,21 @@ export const getAllChallengesWithProgressController = asyncHandler(
       search,
       difficulty,
       category,
+    });
+
+    res.status(200).json(result);
+  },
+);
+
+// Controller pour récupérer tous les challenges pour la page d'administration
+export const getAdminChallengesController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 12;
+
+    const result = await getAdminChallenges({
+      page,
+      limit,
     });
 
     res.status(200).json(result);

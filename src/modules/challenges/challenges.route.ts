@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createChallengeController,
   deleteChallengeController,
+  getAdminChallengesController,
   getAllChallengesController,
   getAllChallengesWithProgressController,
   getChallengeByIdController,
@@ -14,8 +15,18 @@ import { adminMiddleware } from "../../middlewares/admin.middleware";
 const challengeRouter = Router();
 
 // Public
-challengeRouter.get("/me", authMiddleware, getAllChallengesWithProgressController);
+challengeRouter.get(
+  "/me",
+  authMiddleware,
+  getAllChallengesWithProgressController,
+);
 challengeRouter.get("/", getAllChallengesController);
+challengeRouter.get(
+  "/admin",
+  authMiddleware,
+  adminMiddleware,
+  getAdminChallengesController,
+);
 challengeRouter.get("/slug/:slug", getChallengeBySlugController);
 challengeRouter.get("/:id", getChallengeByIdController);
 
