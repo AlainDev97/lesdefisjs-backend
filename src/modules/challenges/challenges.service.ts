@@ -252,15 +252,33 @@ export async function getAllChallengesWithProgress({
 
 export async function getAdminChallenges({
   page = 1,
-  limit = 12,
+  limit = 10,
+  search = "",
 }: {
   page?: number;
   limit?: number;
+  search?: string;
 }) {
   const skip = (page - 1) * limit;
 
+  const where = search
+    ? {
+        OR: [
+          { title: { contains: search, mode: "insensitive" as const } },
+          { slug: { contains: search, mode: "insensitive" as const } },
+          { description: { contains: search, mode: "insensitive" as const } },
+          {
+            category: {
+              name: { contains: search, mode: "insensitive" as const },
+            },
+          },
+        ],
+      }
+    : {};
+
   const [challenges, total] = await Promise.all([
     prisma.challenge.findMany({
+      where,
       skip,
       take: limit,
       include: {
@@ -272,7 +290,7 @@ export async function getAdminChallenges({
       },
     }),
 
-    prisma.challenge.count(),
+    prisma.challenge.count({ where }),
   ]);
 
   return {

@@ -88,10 +88,12 @@ export const getAdminChallengesController = asyncHandler(
   async (req: Request, res: Response) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 12;
+    const search = String(req.query.search ?? "");
 
     const result = await getAdminChallenges({
       page,
       limit,
+      search,
     });
 
     res.status(200).json(result);
