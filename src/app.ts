@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import morgan from "morgan";
 import routes from "./routes";
@@ -9,7 +10,13 @@ import { errorMiddleware } from "./middlewares/error.middleware";
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.PUBLIC_URL || "http://localhost:3000",
+    credentials: true,
+  }),
+);
 app.use(morgan("dev"));
 app.use(express.json());
 

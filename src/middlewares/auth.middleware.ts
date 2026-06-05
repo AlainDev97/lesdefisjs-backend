@@ -18,15 +18,14 @@ export function authMiddleware(
   next: NextFunction,
 ) {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies?.accessToken;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!token) {
       return res.status(401).json({
         message: "Token manquant ou invalide",
       });
     }
 
-    const token = authHeader.split(" ")[1];
     const jwtSecret = process.env.JWT_SECRET;
 
     if (!jwtSecret) {
@@ -38,7 +37,8 @@ export function authMiddleware(
     const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
 
     req.user = decoded;
-    next();
+
+    return next();
   } catch {
     return res.status(401).json({
       message: "Token invalide ou expiré",

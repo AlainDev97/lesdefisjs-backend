@@ -2,6 +2,15 @@ import { Request, Response } from "express";
 import { getMeService, loginService, registerService } from "./auth.service";
 import { AuthenticatedRequest } from "../../middlewares/auth.middleware";
 
+function setAuthCookie(res: Response, token: string) {
+  res.cookie("accessToken", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
 export async function registerController(req: Request, res: Response) {
   try {
     const { username, email, password } = req.body;
@@ -12,20 +21,13 @@ export async function registerController(req: Request, res: Response) {
       password,
     });
 
-    return res.status(201).json(result);
+    setAuthCookie(res, result.token);
+
+    return res.status(201).json({
+      user: result.user,
+    });
   } catch (error) {
     if (error instanceof Error) {
-      if (
-        error.message === "username, email et password sont requis" ||
-        error.message ===
-          "Le mot de passe doit contenir au moins 6 caractères" ||
-        error.message === "Cet email est déjà utilisé" ||
-        error.message === "Ce nom d'utilisateur est déjà utilisé" ||
-        error.message === "JWT_SECRET manquant"
-      ) {
-        return res.status(400).json({ message: error.message });
-      }
-
       return res.status(400).json({ message: error.message });
     }
 
@@ -44,17 +46,13 @@ export async function loginController(req: Request, res: Response) {
       password,
     });
 
-    return res.status(200).json(result);
+    setAuthCookie(res, result.token);
+
+    return res.status(200).json({
+      user: result.user,
+    });
   } catch (error) {
     if (error instanceof Error) {
-      if (
-        error.message === "email et password sont requis" ||
-        error.message === "Identifiants invalides" ||
-        error.message === "JWT_SECRET manquant"
-      ) {
-        return res.status(400).json({ message: error.message });
-      }
-
       return res.status(400).json({ message: error.message });
     }
 
@@ -62,6 +60,18 @@ export async function loginController(req: Request, res: Response) {
       message: "Erreur serveur lors de la connexion",
     });
   }
+}
+
+export async function logoutController(req: Request, res: Response) {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  return res.status(200).json({
+    message: "Déconnexion réussie",
+  });
 }
 
 export async function meController(req: AuthenticatedRequest, res: Response) {
