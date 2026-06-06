@@ -68,15 +68,17 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
   });
 
   try {
-    const executionResults = challenge.testCases.map((testCase) => {
-      const result = runCodeAgainstTestCase(
+    const executionResults = [];
+
+    for (const testCase of challenge.testCases) {
+      const result = await runCodeAgainstTestCase(
         data.sourceCode,
         challenge.functionName,
         testCase.input,
         testCase.expectedOutput,
       );
 
-      return {
+      executionResults.push({
         testCaseId: testCase.id,
         passed: result.passed,
         actualOutput: result.actualOutput,
@@ -84,8 +86,8 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
         errorMessage: result.errorMessage,
         executionTimeMs: result.executionTimeMs,
         isHidden: testCase.isHidden,
-      };
-    });
+      });
+    }
 
     const passedCount = executionResults.filter(
       (result) => result.passed,

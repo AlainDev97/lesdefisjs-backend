@@ -1,3 +1,6 @@
+import { execFile } from "node:child_process";
+import path from "node:path";
+
 type RunTestCaseResult = {
   passed: boolean;
   actualOutput: unknown;
@@ -5,55 +8,65 @@ type RunTestCaseResult = {
   executionTimeMs: number;
 };
 
-function deepEqual(a: unknown, b: unknown): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
 export function runCodeAgainstTestCase(
   sourceCode: string,
   functionName: string,
   input: unknown,
   expectedOutput: unknown,
-): RunTestCaseResult {
+): Promise<RunTestCaseResult> {
   const start = Date.now();
 
-  try {
-    const executableCode = `
-      ${sourceCode}
-      return typeof ${functionName} !== "undefined" ? ${functionName} : null;
-    `;
+  return new Promise((resolve) => {
+    const runnerPath = path.join(__dirname, "sandbox-runner.js");
 
-    const getFunction = new Function(executableCode);
-    const userFunction = getFunction();
+    const payload = JSON.stringify({
+      sourceCode,
+      functionName,
+      input,
+      expectedOutput,
+    });
 
-    if (typeof userFunction !== "function") {
-      return {
-        passed: false,
-        actualOutput: null,
-        errorMessage: `La fonction "${functionName}" est introuvable dans le code soumis.`,
-        executionTimeMs: Date.now() - start,
-      };
-    }
+    execFile(
+      "node",
+      [runnerPath, payload],
+      {
+        timeout: 1500,
+        maxBuffer: 1024 * 1024,
+        env: {},
+      },
+      (error, stdout) => {
+        const executionTimeMs = Date.now() - start;
 
-    const args = Array.isArray(input) ? input : [input];
-    const actualOutput = userFunction(...args);
-    const passed = deepEqual(actualOutput, expectedOutput);
+        if (error) {
+          return resolve({
+            passed: false,
+            actualOutput: null,
+            errorMessage:
+              error.killed || error.signal === "SIGTERM"
+                ? "Temps d'exécution dépassé."
+                : error.message,
+            executionTimeMs,
+          });
+        }
 
-    return {
-      passed,
-      actualOutput,
-      errorMessage: null,
-      executionTimeMs: Date.now() - start,
-    };
-  } catch (error) {
-    return {
-      passed: false,
-      actualOutput: null,
-      errorMessage:
-        error instanceof Error
-          ? error.message
-          : "Erreur inconnue pendant l'exécution",
-      executionTimeMs: Date.now() - start,
-    };
-  }
+        try {
+          const result = JSON.parse(stdout);
+
+          return resolve({
+            passed: result.passed,
+            actualOutput: result.actualOutput,
+            errorMessage: result.errorMessage,
+            executionTimeMs,
+          });
+        } catch {
+          return resolve({
+            passed: false,
+            actualOutput: null,
+            errorMessage: "Sortie d'exécution invalide.",
+            executionTimeMs,
+          });
+        }
+      },
+    );
+  });
 }
