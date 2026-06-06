@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../lib/prisma";
-import { UserRole } from "../../generated/prisma/client";
+import { UserRole } from "@prisma/client";
 import type { LoginInput, RegisterInput } from "../types/auth";
 
 function generateToken(user: { id: string; email: string; role: UserRole }) {

@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { UserRole } from "../../generated/prisma/client";
+import { UserRole } from "@prisma/client";
 
 export async function getAllUsersService() {
   return prisma.user.findMany({

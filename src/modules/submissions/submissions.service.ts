@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { SubmissionStatus, UserRole } from "../../generated/prisma/client";
+import { SubmissionStatus, UserRole } from "@prisma/client";
 import { runCodeAgainstTestCase } from "../../services/execution.service";
 import { filterSubmissionResultsForUser } from "../../utils/function";
 import { checkAndAwardBadges } from "../badges/badges.service";

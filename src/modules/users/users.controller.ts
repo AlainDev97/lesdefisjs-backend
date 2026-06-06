@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { UserRole } from "../../generated/prisma/client";
+import { UserRole } from "@prisma/client";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware";
 import {
   deleteUserService,

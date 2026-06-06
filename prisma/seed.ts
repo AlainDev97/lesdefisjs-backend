@@ -1,4 +1,4 @@
-import { BadgeCode } from "../src/generated/prisma/client";
+import { BadgeCode } from "@prisma/client";
 import { prisma } from "../src/lib/prisma";
 
 async function main() {

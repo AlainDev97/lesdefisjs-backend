@@ -1,4 +1,4 @@
-import { BadgeCode } from "../../generated/prisma/client";
+import { BadgeCode } from "@prisma/client";
 import { getLeaderboardService } from "../leaderboard/leaderboard.service";
 import { prisma } from "../../lib/prisma";
 
