@@ -92,8 +92,10 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
     const passedCount = executionResults.filter(
       (result) => result.passed,
     ).length;
+
     const totalCount = executionResults.length;
     const failedCount = totalCount - passedCount;
+
     const score =
       totalCount > 0 ? Math.round((passedCount / totalCount) * 100) : 0;
 
@@ -170,12 +172,15 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
         totalCount,
         score,
         executionTimeMs: submissionExecutionTimeMs,
+        errorMessage: null,
       },
       results: filteredSubmission.results,
       earnedBadges,
       challengeProgress,
     };
   } catch (error) {
+    console.error("SUBMISSION EXECUTION ERROR:", error);
+
     const message =
       error instanceof Error
         ? error.message
@@ -198,6 +203,7 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
         totalCount: 0,
         score: 0,
         executionTimeMs: 0,
+        errorMessage: message,
       },
       results: [],
       earnedBadges: [],
@@ -205,7 +211,6 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
     };
   }
 }
-
 export async function getSubmissionByIdService(
   id: string,
   currentUser: { id: string; role: UserRole },
