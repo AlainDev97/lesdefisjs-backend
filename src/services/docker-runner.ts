@@ -5,7 +5,7 @@ const payload = JSON.parse(fs.readFileSync("/app/payload.json", "utf-8"));
 
 const { sourceCode, functionName, input, expectedOutput } = payload;
 
-function deepEqual(a, b) {
+function deepEqual(a: any, b: any) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
