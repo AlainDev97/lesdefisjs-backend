@@ -19,20 +19,23 @@ export async function runCodeAgainstTestCase(
 ): Promise<RunTestCaseResult> {
   const start = Date.now();
 
-  const tempDir = path.join(os.tmpdir(), `hexajs-${randomUUID()}`);
+  const sandboxBaseContainerDir =
+    process.env.SANDBOX_CONTAINER_DIR ?? os.tmpdir();
+
+  const sandboxBaseHostDir =
+    process.env.SANDBOX_HOST_DIR ?? sandboxBaseContainerDir;
+
+  const sandboxId = `hexajs-${randomUUID()}`;
+
+  const tempDirContainer = path.join(sandboxBaseContainerDir, sandboxId);
+  const tempDirHost = path.join(sandboxBaseHostDir, sandboxId);
 
   try {
-    await mkdir(tempDir, { recursive: true });
+    await mkdir(tempDirContainer, { recursive: true });
 
-    const runnerSourcePath = path.join(
-      process.cwd(),
-      "src",
-      "services",
-      "docker-runner.js",
-    );
-
-    const runnerTargetPath = path.join(tempDir, "runner.js");
-    const payloadPath = path.join(tempDir, "payload.json");
+    const runnerSourcePath = path.join(__dirname, "docker-runner.js");
+    const runnerTargetPath = path.join(tempDirContainer, "runner.js");
+    const payloadPath = path.join(tempDirContainer, "payload.json");
 
     await copyFile(runnerSourcePath, runnerTargetPath);
 
@@ -63,13 +66,13 @@ export async function runCodeAgainstTestCase(
           "64",
           "--read-only",
           "-v",
-          `${tempDir}:/app:ro`,
+          `${tempDirHost}:/app:ro`,
           "node:22-alpine",
           "node",
           "/app/runner.js",
         ],
         {
-          timeout: 3000,
+          timeout: 10000,
           maxBuffer: 1024 * 1024,
           env: {},
         },
@@ -111,7 +114,7 @@ export async function runCodeAgainstTestCase(
 
     return result;
   } finally {
-    await rm(tempDir, {
+    await rm(tempDirContainer, {
       recursive: true,
       force: true,
     });
