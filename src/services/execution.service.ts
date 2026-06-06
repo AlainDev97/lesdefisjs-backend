@@ -4,19 +4,25 @@ import { mkdir, rm, writeFile, copyFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
+type TestCasePayload = {
+  testCaseId: string;
+  input: unknown;
+  expectedOutput: unknown;
+};
+
 type RunTestCaseResult = {
+  testCaseId: string;
   passed: boolean;
   actualOutput: unknown;
   errorMessage: string | null;
   executionTimeMs: number;
 };
 
-export async function runCodeAgainstTestCase(
+export async function runCodeAgainstTestCases(
   sourceCode: string,
   functionName: string,
-  input: unknown,
-  expectedOutput: unknown,
-): Promise<RunTestCaseResult> {
+  testCases: TestCasePayload[],
+): Promise<RunTestCaseResult[]> {
   const start = Date.now();
 
   const sandboxBaseContainerDir =
@@ -44,13 +50,12 @@ export async function runCodeAgainstTestCase(
       JSON.stringify({
         sourceCode,
         functionName,
-        input,
-        expectedOutput,
+        testCases,
       }),
       "utf-8",
     );
 
-    const result = await new Promise<RunTestCaseResult>((resolve) => {
+    return await new Promise<RunTestCaseResult[]>((resolve) => {
       execFile(
         "docker",
         [
@@ -77,42 +82,41 @@ export async function runCodeAgainstTestCase(
           env: {},
         },
         (error, stdout) => {
-          const executionTimeMs = Date.now() - start;
+          const totalExecutionTimeMs = Date.now() - start;
 
           if (error) {
-            return resolve({
-              passed: false,
-              actualOutput: null,
-              errorMessage:
-                error.killed || error.signal === "SIGTERM"
-                  ? "Temps d'exécution dépassé."
-                  : error.message,
-              executionTimeMs,
-            });
+            return resolve(
+              testCases.map((testCase) => ({
+                testCaseId: testCase.testCaseId,
+                passed: false,
+                actualOutput: null,
+                errorMessage:
+                  error.killed || error.signal === "SIGTERM"
+                    ? "Temps d'exécution dépassé."
+                    : error.message,
+                executionTimeMs: totalExecutionTimeMs,
+              })),
+            );
           }
 
           try {
             const parsed = JSON.parse(stdout);
 
-            return resolve({
-              passed: parsed.passed,
-              actualOutput: parsed.actualOutput,
-              errorMessage: parsed.errorMessage,
-              executionTimeMs,
-            });
+            return resolve(parsed.results);
           } catch {
-            return resolve({
-              passed: false,
-              actualOutput: null,
-              errorMessage: "Sortie d'exécution invalide.",
-              executionTimeMs,
-            });
+            return resolve(
+              testCases.map((testCase) => ({
+                testCaseId: testCase.testCaseId,
+                passed: false,
+                actualOutput: null,
+                errorMessage: "Sortie d'exécution invalide.",
+                executionTimeMs: totalExecutionTimeMs,
+              })),
+            );
           }
         },
       );
     });
-
-    return result;
   } finally {
     await rm(tempDirContainer, {
       recursive: true,

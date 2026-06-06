@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { SubmissionStatus, UserRole } from "@prisma/client";
-import { runCodeAgainstTestCase } from "../../services/execution.service";
+import { runCodeAgainstTestCases } from "../../services/execution.service";
 import { filterSubmissionResultsForUser } from "../../utils/function";
 import { checkAndAwardBadges } from "../badges/badges.service";
 import { updateUserChallengeProgress } from "../progression/userChallengeProgress.service";
@@ -68,17 +68,26 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
   });
 
   try {
-    const executionResults = [];
+    const rawResults = await runCodeAgainstTestCases(
+      data.sourceCode,
+      challenge.functionName,
+      challenge.testCases.map((testCase) => ({
+        testCaseId: testCase.id,
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+      })),
+    );
 
-    for (const testCase of challenge.testCases) {
-      const result = await runCodeAgainstTestCase(
-        data.sourceCode,
-        challenge.functionName,
-        testCase.input,
-        testCase.expectedOutput,
+    const executionResults = rawResults.map((result) => {
+      const testCase = challenge.testCases.find(
+        (testCase) => testCase.id === result.testCaseId,
       );
 
-      executionResults.push({
+      if (!testCase) {
+        throw new Error("Test case introuvable après exécution");
+      }
+
+      return {
         testCaseId: testCase.id,
         passed: result.passed,
         actualOutput: result.actualOutput,
@@ -86,8 +95,8 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
         errorMessage: result.errorMessage,
         executionTimeMs: result.executionTimeMs,
         isHidden: testCase.isHidden,
-      });
-    }
+      };
+    });
 
     const passedCount = executionResults.filter(
       (result) => result.passed,
