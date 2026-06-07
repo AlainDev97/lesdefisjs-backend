@@ -36,7 +36,18 @@ const publicChallengeSelect = {
   updatedAt: true,
 };
 
+const MAX_SOURCE_CODE_SIZE = 20 * 1024; // 20 KB
+const SUBMISSION_COOLDOWN_MS = 10_000; // 10 secondes
+
 export async function createSubmissionService(data: CreateSubmissionInput) {
+  if (!data.sourceCode?.trim()) {
+    throw new Error("Le code source est obligatoire");
+  }
+
+  if (Buffer.byteLength(data.sourceCode, "utf8") > MAX_SOURCE_CODE_SIZE) {
+    throw new Error("Le code source est trop long. Limite maximale : 20 KB.");
+  }
+
   const challenge = await prisma.challenge.findUnique({
     where: { id: data.challengeId },
     include: {
@@ -65,7 +76,6 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
   const lastSubmission = await prisma.submission.findFirst({
     where: {
       userId: data.userId,
-      challengeId: data.challengeId,
     },
     orderBy: {
       createdAt: "desc",
@@ -74,10 +84,10 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
 
   if (
     lastSubmission &&
-    Date.now() - lastSubmission.createdAt.getTime() < 5000
+    Date.now() - lastSubmission.createdAt.getTime() < SUBMISSION_COOLDOWN_MS
   ) {
     throw new Error(
-      "Merci de ne pas spammer les soumissions. Veuillez attendre quelques secondes avant de réessayer.",
+      "Merci d'attendre quelques secondes avant de soumettre à nouveau.",
     );
   }
 
@@ -125,7 +135,6 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
     const passedCount = executionResults.filter(
       (result) => result.passed,
     ).length;
-
     const totalCount = executionResults.length;
     const failedCount = totalCount - passedCount;
 
@@ -219,6 +228,20 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
       data: {
         status: SubmissionStatus.FAILED,
         errorMessage: message,
+        passedCount: 0,
+        failedCount: challenge.testCases.length,
+        totalCount: challenge.testCases.length,
+        score: 0,
+        executionTimeMs: 0,
+      },
+      include: {
+        results: true,
+        challenge: {
+          select: publicChallengeSelect,
+        },
+        user: {
+          select: publicUserSelect,
+        },
       },
     });
 
@@ -227,8 +250,8 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
       summary: {
         status: failedSubmission.status,
         passedCount: 0,
-        failedCount: 0,
-        totalCount: 0,
+        failedCount: challenge.testCases.length,
+        totalCount: challenge.testCases.length,
         score: 0,
         executionTimeMs: 0,
         errorMessage: message,
@@ -239,6 +262,7 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
     };
   }
 }
+
 export async function getSubmissionByIdService(
   id: string,
   currentUser: { id: string; role: UserRole },

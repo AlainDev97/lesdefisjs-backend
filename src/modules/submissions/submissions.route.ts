@@ -7,10 +7,16 @@ import {
   getSubmissionsByUserController,
 } from "./submissions.controller";
 import { authMiddleware } from "../../middlewares/auth.middleware";
+import { submissionRateLimit } from "../../middlewares/submissionRateLimit.middleware";
 
 const submissionRouter = Router();
 
-submissionRouter.post("/", authMiddleware, createSubmissionController);
+submissionRouter.post(
+  "/",
+  authMiddleware,
+  submissionRateLimit,
+  createSubmissionController,
+);
 
 submissionRouter.get("/me", authMiddleware, getMySubmissionsController);
 
