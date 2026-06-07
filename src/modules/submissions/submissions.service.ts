@@ -12,6 +12,30 @@ type CreateSubmissionInput = {
   language?: string;
 };
 
+const publicUserSelect = {
+  id: true,
+  username: true,
+  role: true,
+};
+
+const publicChallengeSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  description: true,
+  instructions: true,
+  starterCode: true,
+  difficulty: true,
+  status: true,
+  functionName: true,
+  parameters: true,
+  returnType: true,
+  orderIndex: true,
+  categoryId: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 export async function createSubmissionService(data: CreateSubmissionInput) {
   const challenge = await prisma.challenge.findUnique({
     where: { id: data.challengeId },
@@ -145,16 +169,11 @@ export async function createSubmissionService(data: CreateSubmissionInput) {
             createdAt: "asc",
           },
         },
-        challenge: true,
+        challenge: {
+          select: publicChallengeSelect,
+        },
         user: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-            role: true,
-            createdAt: true,
-            updatedAt: true,
-          },
+          select: publicUserSelect,
         },
       },
     });
@@ -235,16 +254,11 @@ export async function getSubmissionByIdService(
           createdAt: "asc",
         },
       },
-      challenge: true,
+      challenge: {
+        select: publicChallengeSelect,
+      },
       user: {
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: publicUserSelect,
       },
     },
   });
@@ -267,7 +281,9 @@ export async function getMySubmissionsService(userId: string) {
   return prisma.submission.findMany({
     where: { userId },
     include: {
-      challenge: true,
+      challenge: {
+        select: publicChallengeSelect,
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -288,14 +304,11 @@ export async function getSubmissionsByChallengeService(
     },
     include: {
       user: {
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          role: true,
-        },
+        select: publicUserSelect,
       },
-      challenge: true,
+      challenge: {
+        select: publicChallengeSelect,
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -317,7 +330,9 @@ export async function getSubmissionsByUserService(
   return prisma.submission.findMany({
     where: { userId },
     include: {
-      challenge: true,
+      challenge: {
+        select: publicChallengeSelect,
+      },
     },
     orderBy: {
       createdAt: "desc",
