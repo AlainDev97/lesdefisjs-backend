@@ -3,17 +3,6 @@ import { ApiError } from "../../utils/ApiError";
 import { slugify } from "../../utils/slugify";
 import type { CreateChallengeInput } from "../types/challenges";
 
-type GetAllChallengesParams = {
-  page?: number;
-  limit?: number;
-};
-
-type GetAllChallengesWithProgressParams = {
-  userId: string;
-  page?: number;
-  limit?: number;
-};
-
 type ChallengeFilters = {
   page?: number;
   limit?: number;
@@ -23,6 +12,21 @@ type ChallengeFilters = {
 };
 
 type UpdateChallengeInput = Partial<CreateChallengeInput>;
+
+function formatPublicChallenge(challenge: any) {
+  const { solutionCode, testCases, ...publicChallenge } = challenge;
+
+  return {
+    ...publicChallenge,
+    testCases: testCases
+      ?.filter((testCase: any) => !testCase.isHidden)
+      .map((testCase: any) => {
+        const { expectedOutput, ...publicTestCase } = testCase;
+
+        return publicTestCase;
+      }),
+  };
+}
 
 export async function createChallenge(data: CreateChallengeInput) {
   const category = await prisma.category.findUnique({
@@ -134,7 +138,7 @@ export async function getAllChallenges({
   ]);
 
   return {
-    data: challenges,
+    data: challenges.map(formatPublicChallenge),
     pagination: {
       page,
       limit,
@@ -230,13 +234,15 @@ export async function getAllChallengesWithProgress({
   const formattedChallenges = challenges.map((challenge) => {
     const progress = challenge.userProgress[0];
 
-    return {
+    const challengeWithProgress = {
       ...challenge,
       isSolved: Boolean(progress?.solvedAt),
       bestScore: progress?.bestScore ?? 0,
       attempts: progress?.attempts ?? 0,
       userProgress: undefined,
     };
+
+    return formatPublicChallenge(challengeWithProgress);
   });
 
   return {
@@ -317,7 +323,7 @@ export async function getChallengeById(id: string) {
     throw new ApiError(404, "Challenge not found");
   }
 
-  return challenge;
+  return formatPublicChallenge(challenge);
 }
 
 export const getChallengeBySlug = async (slug: string) => {
@@ -333,7 +339,7 @@ export const getChallengeBySlug = async (slug: string) => {
     throw new ApiError(404, "Challenge not found");
   }
 
-  return challenge;
+  return formatPublicChallenge(challenge);
 };
 
 export async function updateChallenge(id: string, data: UpdateChallengeInput) {
