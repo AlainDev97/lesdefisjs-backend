@@ -1,9 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { SubmissionStatus, UserRole } from "@prisma/client";
-import { runCodeAgainstTestCases } from "../../services/execution.service";
 import { filterSubmissionResultsForUser } from "../../utils/function";
-import { checkAndAwardBadges } from "../badges/badges.service";
-import { updateUserChallengeProgress } from "../progression/userChallengeProgress.service";
 import { submissionQueue } from "../../queues/submission.queue";
 
 type CreateSubmissionInput = {
