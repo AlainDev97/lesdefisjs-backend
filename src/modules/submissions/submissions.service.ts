@@ -162,7 +162,26 @@ export async function getSubmissionByIdService(
     throw new Error("Accès refusé");
   }
 
-  return filterSubmissionResultsForUser(submission, currentUser);
+  const filteredSubmission = filterSubmissionResultsForUser(
+    submission,
+    currentUser,
+  );
+
+  return {
+    submission: filteredSubmission,
+    summary: {
+      status: filteredSubmission.status,
+      passedCount: filteredSubmission.passedCount,
+      failedCount: filteredSubmission.failedCount,
+      totalCount: filteredSubmission.totalCount,
+      score: filteredSubmission.score,
+      executionTimeMs: filteredSubmission.executionTimeMs,
+      errorMessage: filteredSubmission.errorMessage,
+    },
+    results: filteredSubmission.results,
+    earnedBadges: [],
+    challengeProgress: null,
+  };
 }
 
 export async function getMySubmissionsService(userId: string) {
