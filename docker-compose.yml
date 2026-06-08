@@ -17,6 +17,23 @@ services:
     depends_on:
       - redis
 
+  worker:
+    build: .
+    container_name: lesdefisjs-worker
+    command: npm run worker
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./sandbox-tmp:/sandbox-tmp
+    environment:
+      SANDBOX_CONTAINER_DIR: /sandbox-tmp
+      SANDBOX_HOST_DIR: ${SANDBOX_HOST_DIR}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+
   redis:
     image: redis:7
     container_name: lesdefisjs-redis

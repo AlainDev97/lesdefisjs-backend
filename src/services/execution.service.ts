@@ -39,7 +39,10 @@ export async function runCodeAgainstTestCases(
   try {
     await mkdir(tempDirContainer, { recursive: true });
 
-    const runnerSourcePath = path.join(__dirname, "docker-runner.js");
+    const runnerSourcePath = path.resolve(
+      process.cwd(),
+      "dist/services/docker-runner.js",
+    );
     const runnerTargetPath = path.join(tempDirContainer, "runner.js");
     const payloadPath = path.join(tempDirContainer, "payload.json");
 
