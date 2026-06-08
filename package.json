@@ -7,7 +7,8 @@
     "seed": "ts-node-dev --respawn --transpile-only prisma/seed.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "prisma:init": "prisma init"
+    "prisma:init": "prisma init",
+    "worker": "tsx src/workers/start-worker.ts"
   },
   "keywords": [],
   "author": "",
@@ -38,6 +39,7 @@
     "@types/morgan": "^1.9.10",
     "@types/node": "^25.9.1",
     "ts-node-dev": "^2.0.0",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.2"
   },
   "overrides": {

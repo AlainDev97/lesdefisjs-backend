@@ -12,3 +12,13 @@ services:
     environment:
       SANDBOX_CONTAINER_DIR: /sandbox-tmp
       SANDBOX_HOST_DIR: ${SANDBOX_HOST_DIR}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    container_name: lesdefisjs-redis
+    ports:
+      - "6379:6379"
