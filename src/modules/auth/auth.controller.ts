@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { getMeService, loginService, registerService } from "./auth.service";
 import { AuthenticatedRequest } from "../../middlewares/auth.middleware";
 import { registerSchema, loginSchema } from "./auth.schema";
+import { isBlockedEmailDomain } from "../../utils/email.utils";
 
 function setAuthCookie(res: Response, token: string) {
   res.cookie("accessToken", token, {
@@ -22,7 +23,13 @@ export async function registerController(req: Request, res: Response) {
       });
     }
 
-    const { username, email, password } = req.body;
+    const { username, email, password } = parsedBody.data;
+
+    if (isBlockedEmailDomain(email)) {
+      return res.status(400).json({
+        message: "Les adresses email temporaires ne sont pas autorisées.",
+      });
+    }
 
     const result = await registerService({
       username,
@@ -56,7 +63,7 @@ export async function loginController(req: Request, res: Response) {
       });
     }
 
-    const { email, password } = req.body;
+    const { email, password } = parsedBody.data;
 
     const result = await loginService({
       email,
