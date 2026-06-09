@@ -144,13 +144,13 @@ Les utilisateurs gagnent de l'expérience (XP).
 
 Badges actuellement disponibles :
 
-| Badge         | Description                      |
-| ------------- | -------------------------------- |
-| FIRST_SUCCESS | Premier défi réussi              |
-| PERFECT_SCORE | Obtenir un score de 100 %        |
-| REGULAR       | Réaliser 10 soumissions          |
-| CONFIRMED     | Réussir 5 défis différents       |
-| TOP_PLAYER    | Atteindre le Top 3 du classement |
+| Badge | Description |
+|---------|---------|
+| FIRST_SUCCESS | Premier défi réussi |
+| PERFECT_SCORE | Obtenir un score de 100 % |
+| REGULAR | Réaliser 10 soumissions |
+| CONFIRMED | Réussir 5 défis différents |
+| TOP_PLAYER | Atteindre le Top 3 du classement |
 
 ---
 
