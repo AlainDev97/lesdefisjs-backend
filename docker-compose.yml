@@ -6,6 +6,9 @@ services:
       - "5000:5000"
     env_file:
       - .env
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./sandbox-tmp:/sandbox-tmp
     environment:
@@ -22,6 +25,9 @@ services:
     command: npm run worker
     env_file:
       - .env
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./sandbox-tmp:/sandbox-tmp
