@@ -7,6 +7,7 @@ import {
   getSubmissionsByUserService,
 } from "./submissions.service";
 import { AuthenticatedRequest } from "../../middlewares/auth.middleware";
+import { createSubmissionSchema } from "./submissions.schema";
 
 export async function createSubmissionController(
   req: AuthenticatedRequest,
@@ -19,13 +20,15 @@ export async function createSubmissionController(
       });
     }
 
-    const { challengeId, sourceCode, language } = req.body;
+    const parsedBody = createSubmissionSchema.safeParse(req.body);
 
-    if (!challengeId || !sourceCode) {
+    if (!parsedBody.success) {
       return res.status(400).json({
-        message: "challengeId et sourceCode sont requis",
+        message: parsedBody.error.issues[0].message,
       });
     }
+
+    const { challengeId, sourceCode, language } = parsedBody.data;
 
     const result = await createSubmissionService({
       userId: req.user.id,
