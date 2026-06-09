@@ -7,7 +7,6 @@ services:
     env_file:
       - .env
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./sandbox-tmp:/sandbox-tmp
     environment:
       SANDBOX_CONTAINER_DIR: /sandbox-tmp
