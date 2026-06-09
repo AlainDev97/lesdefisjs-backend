@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { getMeService, loginService, registerService } from "./auth.service";
 import { AuthenticatedRequest } from "../../middlewares/auth.middleware";
+import { registerSchema, loginSchema } from "./auth.schema";
 
 function setAuthCookie(res: Response, token: string) {
   res.cookie("accessToken", token, {
@@ -13,6 +14,14 @@ function setAuthCookie(res: Response, token: string) {
 
 export async function registerController(req: Request, res: Response) {
   try {
+    const parsedBody = registerSchema.safeParse(req.body);
+
+    if (!parsedBody.success) {
+      return res.status(400).json({
+        message: parsedBody.error.issues[0].message,
+      });
+    }
+
     const { username, email, password } = req.body;
 
     const result = await registerService({
@@ -39,6 +48,14 @@ export async function registerController(req: Request, res: Response) {
 
 export async function loginController(req: Request, res: Response) {
   try {
+    const parsedBody = loginSchema.safeParse(req.body);
+
+    if (!parsedBody.success) {
+      return res.status(400).json({
+        message: parsedBody.error.issues[0].message,
+      });
+    }
+
     const { email, password } = req.body;
 
     const result = await loginService({
