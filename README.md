@@ -1,12 +1,12 @@
 # HexaJS Backend
 
-Backend API for HexaJS, a JavaScript coding challenge platform inspired by LeetCode and Codewars.
+API backend de HexaJS, une plateforme de défis JavaScript inspirée de LeetCode et Codewars.
 
-The API handles authentication, challenges, submissions, automated code execution, badges, progression, leaderboards, and administrative features.
+L'API gère l'authentification, les défis, les soumissions de code, l'exécution automatisée des tests, les badges, la progression des utilisateurs, les classements et les fonctionnalités d'administration.
 
 ---
 
-# Tech Stack
+# Stack Technique
 
 - Node.js
 - TypeScript
@@ -21,37 +21,37 @@ The API handles authentication, challenges, submissions, automated code executio
 
 ---
 
-# Features
+# Fonctionnalités
 
-## Authentication
+## Authentification
 
-- User registration
-- User login
-- JWT authentication
-- Secure HttpOnly cookies
-- Role-based authorization
-- USER / ADMIN roles
+- Inscription utilisateur
+- Connexion utilisateur
+- Authentification JWT
+- Cookies HttpOnly sécurisés
+- Gestion des rôles
+- Rôles USER / ADMIN
 
-### Security
+### Sécurité
 
-- Email validation
-- Username validation
-- Strong password validation
-- Temporary email blocking
-- Protected routes
+- Validation des emails
+- Validation des pseudos
+- Validation forte des mots de passe
+- Blocage des emails temporaires
+- Routes protégées
 
 ---
 
-## Challenges
+## Défis
 
-- Challenge creation
-- Challenge update
-- Challenge deletion
-- Public challenge listing
-- Challenge details by slug
-- Difficulty management
+- Création de défis
+- Modification de défis
+- Suppression de défis
+- Liste publique des défis
+- Consultation d'un défi via son slug
+- Gestion de la difficulté
 
-### Difficulty levels
+### Niveaux de difficulté
 
 - EASY
 - MEDIUM
@@ -59,50 +59,50 @@ The API handles authentication, challenges, submissions, automated code executio
 
 ---
 
-## Test Cases
+## Cas de test
 
-Each challenge contains multiple test cases.
+Chaque défi possède plusieurs cas de test.
 
-Features:
+Fonctionnalités :
 
-- Visible test cases
-- Hidden test cases
-- Automatic execution
-- Ordered execution
-
----
-
-## Code Submissions
-
-Users can submit JavaScript solutions.
-
-Submission flow:
-
-1. User submits code
-2. Submission is stored
-3. Job is added to BullMQ queue
-4. Worker executes tests
-5. Results are stored
-6. Score is calculated
-7. Badges and progression are updated
+- Cas de test visibles
+- Cas de test cachés
+- Exécution automatique
+- Ordre d'exécution configurable
 
 ---
 
-## Secure Sandbox Execution
+## Soumissions de code
 
-User code is executed inside isolated Docker containers.
+Les utilisateurs peuvent soumettre des solutions JavaScript.
 
-Security measures:
+Workflow :
 
-- Docker sandbox
-- Read-only filesystem
-- No network access
-- CPU limitation
-- Memory limitation
-- Process limitation
-- Execution timeout
+1. L'utilisateur soumet son code
+2. La soumission est enregistrée
+3. Une tâche est ajoutée à la file BullMQ
+4. Le worker exécute les tests
+5. Les résultats sont enregistrés
+6. Le score est calculé
+7. Les badges et la progression sont mis à jour
 
-Example Docker restrictions:
+---
+
+## Exécution sécurisée du code
+
+Le code utilisateur est exécuté dans des conteneurs Docker isolés.
+
+Mesures de sécurité :
+
+- Sandbox Docker
+- Système de fichiers en lecture seule
+- Aucun accès réseau
+- Limitation CPU
+- Limitation mémoire
+- Limitation du nombre de processus
+- Timeout d'exécution
+
+Exemple de restrictions Docker :
 
 ```bash
 --network none
@@ -114,22 +114,22 @@ Example Docker restrictions:
 
 ---
 
-## Leaderboard
+## Classement
 
-The leaderboard ranks users according to:
+Le classement des utilisateurs est calculé selon :
 
-- Solved challenges
-- Average score
-- Best score
-- Number of submissions
+- Nombre de défis résolus
+- Score moyen
+- Meilleur score
+- Nombre total de soumissions
 
 ---
 
-## Progression System
+## Système de progression
 
-Users gain experience points (XP).
+Les utilisateurs gagnent de l'expérience (XP).
 
-### Current titles
+### Titres actuels
 
 - Débutant JS
 - Apprenti développeur
@@ -142,19 +142,19 @@ Users gain experience points (XP).
 
 ## Badges
 
-Current badges:
+Badges actuellement disponibles :
 
-| Badge | Description |
-|---------|---------|
-| FIRST_SUCCESS | First successful challenge |
-| PERFECT_SCORE | Score 100% |
-| REGULAR | 10 submissions |
-| CONFIRMED | 5 different challenges solved |
-| TOP_PLAYER | Top 3 leaderboard |
+| Badge         | Description                      |
+| ------------- | -------------------------------- |
+| FIRST_SUCCESS | Premier défi réussi              |
+| PERFECT_SCORE | Obtenir un score de 100 %        |
+| REGULAR       | Réaliser 10 soumissions          |
+| CONFIRMED     | Réussir 5 défis différents       |
+| TOP_PLAYER    | Atteindre le Top 3 du classement |
 
 ---
 
-# Project Structure
+# Structure du projet
 
 ```txt
 src
@@ -181,7 +181,7 @@ src
 
 ---
 
-# Environment Variables
+# Variables d'environnement
 
 ```env
 NODE_ENV=production
@@ -205,32 +205,32 @@ SANDBOX_HOST_DIR=
 
 # Installation
 
-## Clone repository
+## Cloner le projet
 
 ```bash
 git clone <repository-url>
 cd backend
 ```
 
-## Install dependencies
+## Installer les dépendances
 
 ```bash
 npm install
 ```
 
-## Generate Prisma client
+## Générer le client Prisma
 
 ```bash
 npx prisma generate
 ```
 
-## Run migrations
+## Appliquer les migrations
 
 ```bash
 npx prisma migrate deploy
 ```
 
-## Seed database
+## Alimenter la base de données
 
 ```bash
 npm run seed
@@ -238,15 +238,15 @@ npm run seed
 
 ---
 
-# Development
+# Développement
 
-Start API:
+Lancer l'API :
 
 ```bash
 npm run dev
 ```
 
-Start Worker:
+Lancer le worker :
 
 ```bash
 npm run worker
@@ -256,21 +256,21 @@ npm run worker
 
 # Production
 
-The application is designed to run with Docker.
+L'application est conçue pour fonctionner avec Docker.
 
-### Containers
+### Conteneurs
 
 - API
 - Worker
 - Redis
 
-The PostgreSQL database can run directly on the VPS or inside Docker depending on the deployment strategy.
+La base de données PostgreSQL peut être hébergée directement sur le VPS ou dans Docker selon la stratégie de déploiement choisie.
 
 ---
 
-# API Endpoints
+# Endpoints API
 
-## Auth
+## Authentification
 
 ```http
 POST /api/auth/register
@@ -279,21 +279,21 @@ GET  /api/auth/me
 POST /api/auth/logout
 ```
 
-## Challenges
+## Défis
 
 ```http
 GET /api/challenges
 GET /api/challenges/:slug
 ```
 
-## Submissions
+## Soumissions
 
 ```http
 POST /api/submissions
 GET  /api/submissions/me
 ```
 
-## Leaderboard
+## Classement
 
 ```http
 GET /api/leaderboard
@@ -313,35 +313,35 @@ GET /api/badges/me
 
 ---
 
-# Security
+# Sécurité
 
-Implemented protections:
+Protections mises en place :
 
-- JWT Authentication
-- Role-based authorization
-- Zod validation
-- Password hashing with bcrypt
+- Authentification JWT
+- Gestion des rôles
+- Validation des données avec Zod
+- Hashage des mots de passe avec bcrypt
 - Rate limiting
-- Submission cooldown
-- Hidden test cases
-- Docker sandbox execution
-- Environment variable protection
+- Cooldown entre les soumissions
+- Cas de test cachés
+- Exécution sécurisée dans Docker
+- Protection des variables d'environnement
 
 ---
 
 # Roadmap
 
-- Multi-language support
-- AI assistant
-- Code editor improvements
-- Achievement system expansion
-- Real-time submission updates
-- Advanced analytics
+- Support multi-langages
+- Assistant IA
+- Amélioration de l'éditeur de code
+- Extension du système de badges
+- Mise à jour des résultats en temps réel
+- Statistiques avancées
 
 ---
 
-# Author
+# Auteur
 
-Developed by Alain (Sparcky)
+Développé par Alain (Sparcky).
 
-HexaJS is a personal project focused on learning, security, software architecture, and coding challenge platforms.
+HexaJS est un projet personnel conçu pour approfondir les compétences en développement backend, sécurité, architecture logicielle et plateformes de programmation.
