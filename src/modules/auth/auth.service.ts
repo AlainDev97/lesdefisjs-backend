@@ -5,7 +5,7 @@ import { UserRole } from "@prisma/client";
 import type { LoginInput, RegisterInput } from "../types/auth";
 
 function generateToken(user: { id: string; email: string; role: UserRole }) {
-  const jwtSecret = process.env.JWT_SECRET || "your_jwt_secret";
+  const jwtSecret = process.env.JWT_SECRET;
 
   if (!jwtSecret) {
     throw new Error("JWT_SECRET manquant");
@@ -18,7 +18,7 @@ function generateToken(user: { id: string; email: string; role: UserRole }) {
       role: user.role,
     },
     jwtSecret,
-    { expiresIn: "7d" },
+    { expiresIn: "14d" },
   );
 }
 
